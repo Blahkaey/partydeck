@@ -1,9 +1,8 @@
-use crate::game::{find_game_by_handler_uid, Executable, Game};
+use crate::game::{Executable, Game};
 use crate::input::InputDevice;
-use crate::instance::Instance;
-use crate::util::{scan_profiles, GUEST_NAMES};
+use crate::instance::{set_instance_names,Instance};
+use crate::util::scan_profiles;
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 #[derive(Debug, Clone, Default)]
 pub struct CliArgs {
