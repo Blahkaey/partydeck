@@ -208,8 +208,14 @@ pub fn build_instances_from_cli(
 
         // Handle devices
         for device_id in &player_spec.devices {
-            let idx = find_next_available_device(input_devices, device_id, &used_device_indices);
-            
+            let idx = input_devices
+                .iter()
+                .enumerate()
+                .find(|(idx, device)| {
+                    !used_device_indices.contains(idx) && device.matches(device_id)
+                })
+                .map(|(idx, _)| idx);
+
             if let Some(idx) = idx {
                 if !instance.devices.contains(&idx) {
                     instance.devices.push(idx);
@@ -241,32 +247,6 @@ pub fn build_instances_from_cli(
     set_instance_names(&mut instances, profiles);
 
     Ok(instances)
-}
-
-fn find_next_available_device(
-    devices: &[InputDevice], 
-    identifier: &str, 
-    used_indices: &[usize]
-) -> Option<usize> {
-    devices
-        .iter()
-        .enumerate()
-        .find(|(idx, device)| {
-            !used_indices.contains(idx) && device.matches(identifier)
-        })
-        .map(|(idx, _)| idx)
-}
-
-pub fn resolve_game_from_cli(mode: &LaunchMode) -> Result<Game, String> {
-    match mode {
-        LaunchMode::Gui => Err("GUI mode does not specify a game".to_string()),
-        LaunchMode::Handler(uid) => find_game_by_handler_uid(uid)
-            .ok_or_else(|| format!("Handler with UID '{}' not found", uid)),
-        LaunchMode::Executable(exec, args) => Ok(Game::ExecRef(Executable::new(
-            PathBuf::from(exec),
-            args.clone(),
-        ))),
-    }
 }
 
 pub static USAGE_TEXT: &str = r#"

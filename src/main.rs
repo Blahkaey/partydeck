@@ -10,12 +10,13 @@ mod paths;
 mod util;
 
 use crate::app::{PartyApp, LightPartyApp, load_cfg};
-use crate::cli::{parse_args, build_instances_from_cli, resolve_game_from_cli, LaunchMode};
-use crate::game::{list_all_handlers, Game};
+use crate::cli::{parse_args, build_instances_from_cli, LaunchMode};
+use crate::game::{list_all_handlers, Game, find_game_by_handler_uid, Executable};
 use crate::input::{scan_input_devices, list_all_devices};
 use crate::monitor::get_monitors_sdl;
 use crate::paths::PATH_PARTY;
 use crate::util::{scan_profiles, remove_guest_profiles};
+use std::path::PathBuf;
 
 fn main() -> eframe::Result {
     // Our sdl/multimonitor stuff essentially depends on us running through x11.
@@ -107,15 +108,23 @@ fn create_cli_app(
     cli_args: cli::CliArgs, 
     monitors: Vec<crate::monitor::Monitor>
 ) -> Box<dyn eframe::App> {
-    let game = match resolve_game_from_cli(&cli_args.mode) {
-        Ok(g) => g,
-        Err(e) => {
-            eprintln!("[partydeck] Error: {}", e);
-            // Only list handlers if it's actually a handler-related error
-            if matches!(cli_args.mode, LaunchMode::Handler(_)) {
-                eprintln!("\nAvailable handlers:");
-                list_all_handlers();
+    let game = match &cli_args.mode {
+        LaunchMode::Handler(uid) => {
+            match find_game_by_handler_uid(uid) {
+                Some(g) => g,
+                None => {
+                    eprintln!("[partydeck] Error: Handler with UID '{}' not found", uid);
+                    eprintln!("\nAvailable handlers:");
+                    list_all_handlers();
+                    std::process::exit(1);
+                }
             }
+        }
+        LaunchMode::Executable(exec, args) => {
+            Game::ExecRef(Executable::new(PathBuf::from(exec), args.clone()))
+        }
+        LaunchMode::Gui => {
+            eprintln!("[partydeck] Error: GUI mode does not specify a game");
             std::process::exit(1);
         }
     };
