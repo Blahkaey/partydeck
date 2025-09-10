@@ -190,6 +190,13 @@ pub fn launch_cmd(
             false => "gamescope",
         };
 
+        if cfg.enable_cpu_affinity {
+            let affinity_cores: Vec<&str> = cfg.cpu_affinity_pattern.split(';').collect();
+            if let Some(cores) = affinity_cores.get(i) {
+                cmd.push_str(&format!("taskset -c {} ", cores));
+            }
+        }
+
         cmd.push_str(&format!(
             "{gamescope} -W {} -H {} ",
             instance.width, instance.height

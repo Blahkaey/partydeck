@@ -27,6 +27,9 @@ pub struct PartyConfig {
     pub pad_filter_type: PadFilterType,
     #[serde(default)]
     pub allow_multiple_instances_on_same_device: bool,
+    pub enable_cpu_affinity: bool,
+    #[serde(default)]
+    pub cpu_affinity_pattern: String,
 }
 
 impl Default for PartyConfig {
@@ -42,6 +45,8 @@ impl Default for PartyConfig {
             vertical_two_player: false,
             pad_filter_type: PadFilterType::NoSteamInput,
             allow_multiple_instances_on_same_device: false,
+            enable_cpu_affinity:false,
+            cpu_affinity_pattern: "0,1,8,9;2,3,10,11;4,5,12,13;6,7,14,15".to_string(),
         }
     }
 }
