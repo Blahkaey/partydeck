@@ -1,9 +1,8 @@
-use crate::util::{scan_profiles, create_profile.GUEST_NAMES};
+use crate::util::{scan_profiles, create_profile, GUEST_NAMES};
 use crate::cli::PlayerSpec;
 use crate::input::InputDevice;
 use crate::monitor::Monitor;
 use crate::app::PartyConfig;
-use std::error::Error;
 
 #[derive(Clone)]
 pub struct Instance {

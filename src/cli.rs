@@ -1,4 +1,3 @@
-use crate::game::{Executable, Game};
 use crate::handler::scan_handlers;
 use crate::input::InputDevice;
 use std::collections::HashMap;

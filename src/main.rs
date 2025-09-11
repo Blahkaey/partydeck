@@ -189,7 +189,7 @@ fn create_cli_app_with_players(
 ) -> Box<dyn eframe::App> {
     let profiles = scan_profiles(true);
     
-    match build_instances_from_spec(&cli_args.players, &input_devices, &profiles) {
+    match build_instance_from_spec(&cli_args.players, &input_devices, &profiles) {
         Ok(instances) => {
             println!("[partydeck] Created {} instances from CLI", instances.len());
             for (i, instance) in instances.iter().enumerate() {
