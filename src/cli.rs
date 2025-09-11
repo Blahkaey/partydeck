@@ -1,5 +1,4 @@
 use crate::handler::scan_handlers;
-use crate::input::InputDevice;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]

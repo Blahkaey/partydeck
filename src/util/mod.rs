@@ -13,8 +13,7 @@ pub use profiles::{
 pub use filesystem::{SanitizePath, copy_dir_recursive, get_rootpath, get_rootpath_handler};
 
 // Re-export functions from launcher
-pub use sys::{kwin_dbus_start_script, kwin_dbus_unload_script, launch_kwin_session, msg, yesno};
+pub use sys::{kwin_dbus_start_script, kwin_dbus_unload_script, msg, yesno};
 
 // Re-export functions from updates
 pub use updates::check_for_partydeck_update;
-
