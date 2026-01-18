@@ -169,6 +169,10 @@ pub fn launch_cmds(
             &instance.width.to_string(),
             "-H",
             &instance.height.to_string(),
+            "-w",
+            &instance.width.to_string(),
+            "-h",
+            &instance.height.to_string(),
         ]);
         if cfg.gamescope_force_grab_cursor {
             cmd.arg("--force-grab-cursor");
