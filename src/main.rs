@@ -10,7 +10,7 @@ mod util;
 
 use crate::app::*;
 use crate::handler::Handler;
-use crate::monitor::*;
+use crate::monitor::get_monitors_errorless;
 use crate::paths::PATH_PARTY;
 use crate::profiles::remove_guest_profiles;
 use crate::util::*;
@@ -21,7 +21,7 @@ fn main() -> eframe::Result {
         std::env::set_var("SDL_VIDEODRIVER", "x11");
     }
 
-    let monitors = get_monitors_sdl();
+    let monitors = get_monitors_errorless();
 
     println!("[partydeck] Monitors detected:");
     for monitor in &monitors {

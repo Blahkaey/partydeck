@@ -180,13 +180,8 @@ pub fn check_for_partydeck_update() -> bool {
                 // Get current version from env!
                 let current_version = env!("CARGO_PKG_VERSION");
 
-                // Compare versions using semver
-                if let (Ok(latest_semver), Ok(current_semver)) = (
-                    semver::Version::parse(latest_version),
-                    semver::Version::parse(current_version),
-                ) {
-                    return latest_semver > current_semver;
-                }
+                // Compare versions directly
+                return latest_version == current_version;
             }
         }
     }
