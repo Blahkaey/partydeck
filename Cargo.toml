@@ -9,7 +9,7 @@ eframe = { version = "0.32.1", features = ["x11", "wayland", "accesskit", "defau
 egui_extras = { version = "0.32.1", features = ["file", "image"], default-features = false }
 evdev = "=0.13.0"
 fastrand = "2.3.0"
-image = { version = "0.25.8", features = ["png"], default-features = false }
+image = { version = "0.25.8", features = ["jpeg", "png"], default-features = false }
 reqwest = { version = "0.12.15", features = ["blocking", "json"] }
 rfd = "0.15.3"
 serde = "1.0.219"
