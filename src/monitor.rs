@@ -23,27 +23,52 @@ impl Monitor {
     }
 }
 
-// This should mimic the SDL monitor retrival used by gamescope, while avoiding all of SDL.
+// This should mimic the SDL monitor retrival used by gamescope, while avoiding all of SDL. (IGNORES SDL_HINT_VIDEO_DISPLAY_PRIORITY, and if display dosnt have "visual info" because all modern one will)
+// https://github.com/libsdl-org/SDL/blob/225fb12ae13b70689bcb8c0b42bf061120fefcc4/src/video/x11/SDL_x11modes.c#L868
 fn get_monitors_x11() -> Result<Vec<Monitor>, Box<dyn std::error::Error>> {
     let (con, screen_num) = x11rb::connect(None)?;
     let screen = &con.setup().roots[screen_num];
 
-    let res = con.randr_get_screen_resources(screen.root)?.reply()?;
+    // Get primary output (sorted first in sdl, but as sdl comments say, this should be done already.)
+    let primary = con
+        .randr_get_output_primary(screen.root)?
+        .reply()?
+        .output;
+
+    let res = con
+        .randr_get_screen_resources(screen.root)?
+        .reply()?;
+
     let mut monitors = Vec::new();
-    for output in res.outputs {
-        if let Ok(info) = con.randr_get_output_info(output, 0)?.reply() {
-            if info.crtc != x11rb::NONE {
-                if let Ok(crtc) = con.randr_get_crtc_info(info.crtc, 0)?.reply() {
-                    monitors.push(Monitor {
-                        name: String::from_utf8_lossy(&info.name).into(),
-                        width: crtc.width.into(),
-                        height: crtc.height.into(),
-                    });
-                }
-            }
+
+    for output in &res.outputs {
+        let info = con
+            .randr_get_output_info(*output, res.config_timestamp)?
+            .reply()?;
+
+        if info.connection != x11rb::protocol::randr::Connection::CONNECTED || info.crtc == 0 {
+            continue;
+        }
+
+        let crtc = con
+            .randr_get_crtc_info(info.crtc, res.config_timestamp)?
+            .reply()?;
+
+        let name = String::from_utf8_lossy(&info.name).to_string();
+
+        let monitor = Monitor {
+            name: name.clone(),
+            width: crtc.width.into(),
+            height: crtc.height.into(),
+        };
+
+        if *output == primary {
+            // Insert primary at the front (SDL requirement for some reason)
+            monitors.insert(0, monitor);
+        } else {
+            monitors.push(monitor);
         }
     }
-
 
     Ok(monitors)
 }
