@@ -1,4 +1,4 @@
-use crate::Monitor;
+use crate::monitor::Monitor;
 use crate::app::PartyConfig;
 use crate::profiles::GUEST_NAMES;
 

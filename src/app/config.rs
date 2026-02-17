@@ -46,6 +46,8 @@ pub struct PartyConfig {
     pub profile_unique_dirs: bool,
     #[serde(default)]
     pub disable_mount_gamedirs: bool,
+    #[serde(default)]
+    pub check_for_updates: bool,
 }
 
 impl Default for PartyConfig {
@@ -64,6 +66,7 @@ impl Default for PartyConfig {
             allow_multiple_instances_on_same_device: false,
             profile_unique_dirs: true,
             disable_mount_gamedirs: false,
+            check_for_updates: true,
         }
     }
 }
