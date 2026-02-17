@@ -16,11 +16,6 @@ use crate::profiles::remove_guest_profiles;
 use crate::util::*;
 
 fn main() -> eframe::Result {
-    // Our sdl/multimonitor stuff essentially depends on us running through x11.
-    unsafe {
-        std::env::set_var("SDL_VIDEODRIVER", "x11");
-    }
-
     let monitors = get_monitors_errorless();
 
     println!("[partydeck] Monitors detected:");
