@@ -16,4 +16,4 @@ deps/releases/gbe-win-release/steamclient_experimental/GameOverlayRenderer.dll \
 deps/releases/gbe-win-release/steamclient_experimental/GameOverlayRenderer64.dll \
 build/res/goldberg/win && \
 cp deps/releases/umu/umu-run build/bin/ && 
-cp deps/gamescope/build-gcc/src/gamescope build/bin/gamescope-kbm
+cp deps/gamescope/build/src/gamescope build/bin/gamescope-kbm
