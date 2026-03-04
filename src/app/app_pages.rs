@@ -24,14 +24,13 @@ impl PartyApp {
         ui.heading("Welcome to PartyDeck");
         ui.separator();
         ui.label("Press SELECT/BACK or Tab to unlock gamepad navigation.");
-        ui.label("PartyDeck is in the very early stages of development; as such, you will likely encounter bugs, issues, and strange design decisions.");
-        ui.label("For debugging purposes, it's recommended to read terminal output (stdout) for further information on errors.");
         ui.separator();
+        ui.label("PartyDeck has discontinued development; no further support will be provided.");
         ui.horizontal_wrapped(|ui| {
-            ui.label("Thank you to");
-            ui.hyperlink_to("♥Ko-fi", "https://ko-fi.com/wunner");
-            ui.label("supporters:");
+            ui.label("This final release is untested; if you encounter any issues that you did not experience in previous versions, feel free to revert to");
+            ui.hyperlink_to("0.8.5", "https://github.com/wunnr/partydeck/releases/tag/v0.8.5");
         });
+        ui.label("Thank you to Ko-fi supporters:");
         ui.label("Framilano, Jayden, Marc, Max Rei");
         ui.horizontal_wrapped(|ui| {
             ui.label("Thank you to");
@@ -49,6 +48,8 @@ impl PartyApp {
             ui.hyperlink_to("@Tau5", "https://github.com/Tau5");
             ui.hyperlink_to("@Twig6943", "https://github.com/Twig6943");
         });
+        ui.label("And thank you to anyone who downloaded and used PartyDeck! Happy gaming!");
+        
     }
 
     pub fn display_page_settings(&mut self, ui: &mut Ui) {
@@ -485,11 +486,6 @@ impl PartyApp {
     }
 
     pub fn display_settings_general(&mut self, ui: &mut Ui) {
-        let check_for_app_updates = ui.checkbox(&mut self.options.check_for_updates, "Check for partydeck updates");
-        if check_for_app_updates.hovered() {
-            self.infotext = "DEFAULT: Enabled\n\nWARNING: CONTACTS GITHUB's SERVERS ON EVERY LAUNCH\nMakes partydeck check online for updates durring each launch, and notfies user when avaliable.".to_string();
-        }
-
         let enable_kwin_script_check = ui.checkbox(
             &mut self.options.enable_kwin_script,
             "(KDE) Automatically resize/reposition instances using KWin script",
