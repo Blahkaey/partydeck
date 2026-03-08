@@ -73,10 +73,19 @@ impl PartyApp {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
                 ui.add(egui::Separator::default().vertical());
-                ui.label(format!("v{}", env!("CARGO_PKG_VERSION")));
+                let version_label = match self.options.check_for_updates {
+                    true => match self.needs_update {
+                        true => format!("v{} (🆕 available)", env!("CARGO_PKG_VERSION")),
+                        false => format!("v{}", env!("CARGO_PKG_VERSION")),
+                    },
+                    false => format!("(Frozen) v{}", env!("CARGO_PKG_VERSION")),
+                };
+                ui.hyperlink_to(version_label, "https://github.com/wunnr/partydeck/releases");
                 ui.add(egui::Separator::default().vertical());
                 ui.hyperlink_to("⮋", "https://drive.proton.me/urls/D9HBKM18YR#zG8XC8yVy9WL")
                     .on_hover_text("Download Game Handlers");
+                ui.hyperlink_to("♥", "https://ko-fi.com/wunner")
+                    .on_hover_text("Support PartyDeck Development");
                 ui.hyperlink_to(
                     "🖹",
                     "https://github.com/wunnr/partydeck/tree/main?tab=License-2-ov-file",

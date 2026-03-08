@@ -1,5 +1,8 @@
 > [!IMPORTANT]
-> Due to incredibly sudden and unfortunate circumstances in my personal life, I no longer have the time nor desire to work on PartyDeck; thus, the project is being placed on indefinite hiatus. I encourage anyone to fork the project if they are interested in continuing development. I never imagined that something I created just for use with my friends would grow as big as it did, and I'm sincerely grateful to everyone who supported, contributed to, or even just used PartyDeck. Thank you all, happy gaming!
+> ### Partydeck continuation 
+> Partydeck development has moved to a new github orginization located at https://github.com/partydeck for the project to continue thanks to [@wunnr's](https://github.com/wunnr) help.
+> [@Blahkaey](https://github.com/blahkaey) and [@davidawesome02-backup](https://github.com/davidawesome02-backup) are currently maintaining partydeck and the related handlers.
+> Development efforts will continue, hopefully adding some exciting new features soon. Stay tuned for more updates.
 
 <img src=".github/assets/icon.png" align="left" width="100" height="100">
 
@@ -13,6 +16,12 @@ A split-screen game launcher for Linux/SteamOS
     <img src=".github/assets/launcher.png" width="49%" />
     <img src=".github/assets/gameplay1.png" width="49%" />
 </p>
+
+> [!NOTE]
+> There is currently no official forum for discussing PartyDeck other than the issues page. If you would like to see a Discord server, please make it known on [this issue page](https://github.com/wunnr/partydeck/issues/127).
+
+> [!NOTE]
+> PartyDeck is in early development, and may contain violations of software best practices and security flaws; use at your own discretion! If you are experienced in software any advice and contributions are greatly appreciated.
 
 ## Features
 
@@ -79,6 +88,8 @@ PartyDeck uses a few software layers to provide a console-like split-screen gami
 
 ## Credits/Thanks
 
+- [@wunnr](https://github.com/wunnr) for starting partydeck
+- [@Blahkaey](https://github.com/blahkaey) for helping to maintain partydeck and the comunity
 - [@davidawesome02-backup](https://github.com/davidawesome02-backup) for the [Gamescope keyboard/mouse fork](https://github.com/davidawesome02-backup/gamescope), and Valve for Gamescope
 - [@blckink](https://github.com/blckink) for contributions
 - MrGoldberg & Detanup01 for [Goldberg Steam Emu](https://github.com/Detanup01/gbe_fork/)

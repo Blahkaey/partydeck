@@ -2663,7 +2663,7 @@ dependencies = [
 
 [[package]]
 name = "partydeck"
-version = "0.9.999999"
+version = "0.8.5"
 dependencies = [
  "dialog",
  "eframe",
