@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> Due to incredibly sudden and unfortunate circumstances in my personal life, I no longer have the time nor desire to work on PartyDeck; thus, the project is being placed on indefinite hiatus. I encourage anyone to fork the project if they are interested in continuing development. I never imagined that something I created just for use with my friends would grow as big as it did, and I'm sincerely grateful to everyone who supported, contributed to, or even just used PartyDeck. Thank you all, happy gaming!
-
 <img src=".github/assets/icon.png" align="left" width="100" height="100">
 
 ### `PartyDeck`
@@ -13,6 +10,12 @@ A split-screen game launcher for Linux/SteamOS
     <img src=".github/assets/launcher.png" width="49%" />
     <img src=".github/assets/gameplay1.png" width="49%" />
 </p>
+
+> [!NOTE]
+> There is currently no official forum for discussing PartyDeck other than the issues page. If you would like to see a Discord server, please make it known on [this issue page](https://github.com/wunnr/partydeck/issues/127).
+
+> [!NOTE]
+> PartyDeck is in early development, and may contain violations of software best practices and security flaws; use at your own discretion! If you are experienced in software any advice and contributions are greatly appreciated.
 
 ## Features
 
