@@ -1,3 +1,9 @@
+> [!IMPORTANT]
+> ### Partydeck continuation 
+> Partydeck development has moved to a new github orginization located at https://github.com/partydeck for the project to continue thanks to [@wunnr's](https://github.com/wunnr) help.
+> [@Blahkaey](https://github.com/blahkaey) and [@davidawesome02-backup](https://github.com/davidawesome02-backup) are currently maintaining partydeck and the related handlers.
+> Development efforts will continue, hopefully adding some exciting new features soon. Stay tuned for more updates.
+
 <img src=".github/assets/icon.png" align="left" width="100" height="100">
 
 ### `PartyDeck`
@@ -82,6 +88,8 @@ PartyDeck uses a few software layers to provide a console-like split-screen gami
 
 ## Credits/Thanks
 
+- [@wunnr](https://github.com/wunnr) for starting partydeck
+- [@Blahkaey](https://github.com/blahkaey) for helping to maintain partydeck and the comunity
 - [@davidawesome02-backup](https://github.com/davidawesome02-backup) for the [Gamescope keyboard/mouse fork](https://github.com/davidawesome02-backup/gamescope), and Valve for Gamescope
 - [@blckink](https://github.com/blckink) for contributions
 - MrGoldberg & Detanup01 for [Goldberg Steam Emu](https://github.com/Detanup01/gbe_fork/)
