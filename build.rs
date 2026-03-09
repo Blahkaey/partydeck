@@ -45,28 +45,28 @@ const DEPS: &[Dep] = &[
 // (src relative to project root, dst relative to target dir)
 const BUNDLE: &[(&str, &str)] = &[
     // goldberg linux
-    ("deps/gbe-linux/regular/x64/steamclient.so", "res/goldberg/linux64/steamclient.so"),
-    ("deps/gbe-linux/regular/x32/steamclient.so", "res/goldberg/linux32/steamclient.so"),
+    ("deps/releases/gbe-linux/regular/x64/steamclient.so", "res/goldberg/linux64/steamclient.so"),
+    ("deps/releases/gbe-linux/regular/x32/steamclient.so", "res/goldberg/linux32/steamclient.so"),
     // goldberg windows
-    ("deps/gbe-win/steamclient_experimental/steamclient.dll", "res/goldberg/win/steamclient.dll"),
-    ("deps/gbe-win/steamclient_experimental/steamclient64.dll", "res/goldberg/win/steamclient64.dll"),
-    ("deps/gbe-win/steamclient_experimental/GameOverlayRenderer.dll", "res/goldberg/win/GameOverlayRenderer.dll"),
-    ("deps/gbe-win/steamclient_experimental/GameOverlayRenderer64.dll", "res/goldberg/win/GameOverlayRenderer64.dll"),
+    ("deps/releases/gbe-win/steamclient_experimental/steamclient.dll", "res/goldberg/win/steamclient.dll"),
+    ("deps/releases/gbe-win/steamclient_experimental/steamclient64.dll", "res/goldberg/win/steamclient64.dll"),
+    ("deps/releases/gbe-win/steamclient_experimental/GameOverlayRenderer.dll", "res/goldberg/win/GameOverlayRenderer.dll"),
+    ("deps/releases/gbe-win/steamclient_experimental/GameOverlayRenderer64.dll", "res/goldberg/win/GameOverlayRenderer64.dll"),
     // umu
-    ("deps/umu/umu-run", "bin/umu-run"),
+    ("deps/releases/umu/umu-run", "bin/umu-run"),
     // resources
     ("res/splitscreen_kwin.js", "res/splitscreen_kwin.js"),
     ("res/splitscreen_kwin_vertical.js", "res/splitscreen_kwin_vertical.js"),
 ];
 
 const BUNDLE_OPTIONAL: &[(&str, &str)] = &[
-    ("deps/gamescope/build-gcc/src/gamescope", "bin/gamescope-kbm"),
+    ("deps/releases/gamescope/build-gcc/src/gamescope", "bin/gamescope-kbm"),
 ];
 
 fn main() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let deps_dir = root.join("deps");
-    fs::create_dir_all(&deps_dir).expect("failed to create deps/");
+    let deps_dir = root.join("deps/releases");
+    fs::create_dir_all(&deps_dir).expect("failed to create deps/releases/");
 
     #[cfg(feature = "download_deps")]
     for dep in DEPS {
