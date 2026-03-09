@@ -57,11 +57,12 @@ Once in the main menu, click the + button to add a game, or click the button wit
 
 You'll need a Rust toolchain with the 2024 Edition. For building the mouse/keyboard gamescope fork, you'll also need `meson` and `ninja` installed.
 
-Clone the repo with submodules:
+Clone the repo and initialise submodules:
 
 ```
-git clone --recurse-submodules https://github.com/partydeck/partydeck.git
+git clone https://github.com/partydeck/partydeck.git
 cd partydeck
+git submodule update --init
 ```
 
 Then build with:
