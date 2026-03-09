@@ -1,8 +1,10 @@
 use std::fs;
 use std::path::Path;
 
+#[cfg(feature = "download_deps")]
 enum ArchFmt { TarBz2, Tar, SevenZ }
 
+#[cfg(feature = "download_deps")]
 struct Dep {
     repo: &'static str,
     asset_contains: &'static str,
@@ -12,6 +14,7 @@ struct Dep {
     rename_from: Option<&'static str>, // gbe extracts to "release/", rename it
 }
 
+#[cfg(feature = "download_deps")]
 const DEPS: &[Dep] = &[
     Dep {
         repo: "Detanup01/gbe_fork",
@@ -65,11 +68,15 @@ fn main() {
     let deps_dir = root.join("deps");
     fs::create_dir_all(&deps_dir).expect("failed to create deps/");
 
+    #[cfg(feature = "download_deps")]
     for dep in DEPS {
         fetch_dep(&deps_dir, dep).unwrap_or_else(|e| {
             panic!("failed to fetch {} from {}: {e}", dep.asset_contains, dep.repo);
         });
     }
+
+    #[cfg(feature = "build_gamescope")]
+    build_gamescope(&deps_dir);
 
     // cargo puts OUT_DIR a few levels deep, walk up to the profile dir (target/release/)
     let target_dir = Path::new(&std::env::var("OUT_DIR").unwrap())
@@ -94,6 +101,37 @@ fn main() {
     }
 }
 
+#[cfg(feature = "build_gamescope")]
+fn build_gamescope(deps_dir: &Path) {
+    use std::process::Command;
+
+    let gamescope_dir = deps_dir.join("gamescope");
+    let build_dir = gamescope_dir.join("build-gcc");
+
+    if !build_dir.exists() {
+        let status = Command::new("meson")
+            .arg("setup")
+            .arg(&build_dir)
+            .arg("-Dinput_emulation=disabled")
+            .arg("-Dbenchmark=disabled")
+            .arg("--auto-features=enabled")
+            .env("CC", "gcc")
+            .env("CXX", "g++")
+            .current_dir(&gamescope_dir)
+            .status()
+            .expect("failed to run meson setup");
+        assert!(status.success(), "meson setup failed");
+    }
+
+    let status = Command::new("ninja")
+        .arg("-C")
+        .arg(&build_dir)
+        .status()
+        .expect("failed to run ninja");
+    assert!(status.success(), "ninja build failed");
+}
+
+#[cfg(feature = "download_deps")]
 fn fetch_dep(deps_dir: &Path, dep: &Dep) -> Result<(), Box<dyn std::error::Error>> {
     if deps_dir.join(dep.marker).exists() {
         return Ok(());
@@ -118,7 +156,7 @@ fn fetch_dep(deps_dir: &Path, dep: &Dep) -> Result<(), Box<dyn std::error::Error
             tar::Archive::new(f).unpack(deps_dir)?;
         }
         ArchFmt::SevenZ => {
-            sevenz_rust::decompress_file(&archive, deps_dir)?;
+            sevenz_rust2::decompress_file(&archive, deps_dir)?;
         }
     }
 
@@ -129,6 +167,7 @@ fn fetch_dep(deps_dir: &Path, dep: &Dep) -> Result<(), Box<dyn std::error::Error
     Ok(())
 }
 
+#[cfg(feature = "download_deps")]
 fn find_release_asset(repo: &str, name_contains: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
     let resp: serde_json::Value = client
@@ -146,6 +185,7 @@ fn find_release_asset(repo: &str, name_contains: &str) -> Result<String, Box<dyn
     Err(format!("no asset matching '{name_contains}' in {repo}").into())
 }
 
+#[cfg(feature = "download_deps")]
 fn download(url: &str, dest: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
     let mut resp = client.get(url)

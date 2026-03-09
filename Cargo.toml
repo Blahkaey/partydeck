@@ -3,6 +3,11 @@ name = "partydeck"
 version = "0.8.5"
 edition = "2024"
 
+[features]
+default = ["download_deps"]
+download_deps = []
+build_gamescope = []
+
 [dependencies]
 dialog = "0.3.0"
 eframe = { version = "0.32.1", features = ["x11", "wayland", "accesskit", "default_fonts", "glow"], default-features = false}
@@ -26,4 +31,4 @@ reqwest = { version = "0.12.15", features = ["blocking", "json"] }
 serde_json = "1.0.140"
 tar = "0.4"
 bzip2 = "0.6.1"
-sevenz-rust = "0.6"
+sevenz-rust2 = { version = "0.20.2", features = ["util"], default-features = false }

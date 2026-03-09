@@ -28,15 +28,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build gamescope
-        run: |
-          cd deps/gamescope
-          export CC=gcc CXX=g++
-          meson build/ -Dinput_emulation=disabled --werror --auto-features=enabled
-          ninja -C build/
-
       - name: Build partydeck
-        run: cargo build --release
+        run: cargo build --release -F build_gamescope
 
       - name: Assemble output
         run: |

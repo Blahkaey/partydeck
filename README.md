@@ -55,18 +55,41 @@ Once in the main menu, click the + button to add a game, or click the button wit
 
 ## Building
 
-To build PartyDeck, You'll need a Rust toolchain installed with the 2024 Edition. For the mouse/keyboard gamescope build, you'll need ninja and meson installed.
-Clone the repo with submodules by running `git clone --recurse-submodules https://github.com/wunnr/partydeck-rs.git`. Navigate to the gamescope submodule at `deps/gamescope` and run these commands to build the mouse/keyboard gamescope:
+You'll need a Rust toolchain with the 2024 Edition. For building the mouse/keyboard gamescope fork, you'll also need `meson` and `ninja` installed.
+
+Clone the repo with submodules:
 
 ```
-git submodule update --init
-meson setup build/
-ninja -C build/
+git clone --recurse-submodules https://github.com/partydeck/partydeck.git
+cd partydeck
 ```
 
-Then, run `get_deps_releases.sh` to get the latest releases of Umu Launcher and Goldberg Steam Emu. 
+Then build with:
 
-Finally, in the main partydeck folder, run `build.sh`. This will build the executable, and place it in the `build` folder, along with the relevant dependencies and resources.
+```
+cargo build --release
+```
+
+By default, the build script downloads the latest releases of Goldberg Steam Emu and UMU Launcher from GitHub. The output binary and bundled dependencies are placed in `target/release/`.
+
+### Build feature flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `download_deps` | on | Downloads Goldberg Steam Emu and UMU Launcher from GitHub releases |
+| `build_gamescope` | off | Builds the mouse/keyboard gamescope fork from the submodule (requires `meson` and `ninja`) |
+
+**Build with gamescope:**
+
+```
+cargo build --release -F build_gamescope
+```
+
+**Skip dependency downloads:**
+
+```
+cargo build --release --no-default-features
+```
 
 
 ## How it Works
