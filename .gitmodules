@@ -1,6 +1,6 @@
 [submodule "deps/gamescope"]
 	path = deps/gamescope
-	url = https://github.com/davidawesome02-backup/gamescope.git
+	url = https://github.com/partydeck/gamescope
 [submodule "deps/gbe_fork"]
 	path = deps/gbe_fork
 	url = https://github.com/Detanup01/gbe_fork.git
