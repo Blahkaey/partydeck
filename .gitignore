@@ -2,6 +2,9 @@
 /build
 /releases
 /deps/releases
+/deps/gbe-linux
+/deps/gbe-win
+/deps/umu
 res/gamescope
 gen_release.sh
 handler.json

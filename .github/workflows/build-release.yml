@@ -1,12 +1,19 @@
-name: CI (Arch)
+name: Build Release
+
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
 jobs:
   build:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
+    permissions:
+      contents: write
+
     steps:
-      - name: Prepare
+      - name: Install dependencies
         run: |
           pacman-key --init
           pacman -Syu --noconfirm
@@ -20,7 +27,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
 
       - name: Build partydeck
         run: cargo build --release -F build_gamescope -F download_deps
@@ -41,11 +47,10 @@ jobs:
       - name: Create tarball
         run: |
           TAG="${GITHUB_REF_NAME}"
-          tar -czf "partydeck-ARCH-TEST-linux-x86_64.tar.gz" partydeck/
+          tar -czf "partydeck-${TAG}-linux-x86_64.tar.gz" partydeck/
 
-      - name: Upload
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: built-binaries
-          path: |
-            partydeck-ARCH-TEST-linux-x86_64.tar.gz
+          files: partydeck-*-linux-x86_64.tar.gz
+          generate_release_notes: true
