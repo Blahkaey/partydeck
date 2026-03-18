@@ -57,7 +57,9 @@ pub fn launch_game(
 
     let mut i = 0;
     for mut cmd in new_cmds {
-        let handle = cmd.spawn()?;
+        let handle = cmd.spawn().map_err(|e| {
+            format!("Failed to start '{}': {}", cmd.get_program().to_string_lossy(), e)
+        })?;
         handles.push(handle);
 
         if i < instances.len() - 1 {
@@ -86,6 +88,14 @@ pub fn launch_cmds(
         true => BIN_GSC_KBM.as_path(),
         false => Path::new("gamescope"),
     };
+
+    if cfg.kbm_support && !gamescope.exists() {
+        return Err("gamescope-kbm is missing. Please reinstall partydeck or disable KBM support.".into());
+    }
+
+    if !cfg.kbm_support && pathsearch::find_executable_in_path("gamescope").is_none() {
+        return Err("gamescope not found in PATH. Please install gamescope through your distro's package manager.".into());
+    }
 
     if (runtime == "scout" && !PATH_STEAM.join("bin32/steam-runtime/run.sh").exists())
         || (runtime == "soldier"

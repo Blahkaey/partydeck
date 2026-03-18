@@ -181,7 +181,7 @@ pub fn check_for_partydeck_update() -> bool {
                 let current_version = env!("CARGO_PKG_VERSION");
 
                 // Compare versions directly
-                return latest_version == current_version;
+                return latest_version != current_version;
             }
         }
     }

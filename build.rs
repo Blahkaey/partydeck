@@ -73,7 +73,7 @@ const BUNDLE: &[(&str, &str)] = &[
 ];
 
 const BUNDLE_OPTIONAL: &[(&str, &str)] = &[
-    ("deps/releases/gamescope/build-gcc/src/gamescope", "bin/gamescope-kbm"),
+    ("deps/gamescope/build-gcc/src/gamescope", "bin/gamescope-kbm"),
 ];
 
 
@@ -109,9 +109,14 @@ fn main() {
         let from = root.join(src);
         let to = target_dir.join(dst);
         fs::create_dir_all(to.parent().unwrap()).unwrap();
-        fs::copy(&from, &to).unwrap_or_else(|e| {
-            panic!("copy {} -> {}: {e}", from.display(), to.display());
-        });
+        if from.exists() {
+            fs::copy(&from, &to).unwrap_or_else(|e| {
+                build_println!("Continuing without it, but existing file for build {} failed to copy to {} due to: {e}", from.display(), to.display());
+                0
+            });
+        } else {
+            build_println!("Build skipping copying file {} due to it being inaccessable or not downloaded.", from.display());
+        }
     }
 
     for &(src, dst) in BUNDLE_OPTIONAL {

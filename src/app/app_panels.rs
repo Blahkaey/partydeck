@@ -74,7 +74,7 @@ impl PartyApp {
                 }
                 ui.add(egui::Separator::default().vertical());
                 let version_label = match self.options.check_for_updates {
-                    true => match self.needs_update {
+                    true => match self.needs_update.load(std::sync::atomic::Ordering::Relaxed) {
                         true => format!("v{} (🆕 available)", env!("CARGO_PKG_VERSION")),
                         false => format!("v{}", env!("CARGO_PKG_VERSION")),
                     },

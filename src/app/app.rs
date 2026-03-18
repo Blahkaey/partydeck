@@ -1,3 +1,5 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread::sleep;
 
 use super::config::*;
@@ -30,7 +32,7 @@ pub enum SettingsPage {
 
 pub struct PartyApp {
     pub installed_steamapps: Vec<Option<steamlocate::App>>,
-    pub needs_update: bool,
+    pub needs_update: Arc<AtomicBool>,
     pub options: PartyConfig,
     pub cur_page: MenuPage,
     pub settings_page: SettingsPage,
@@ -74,7 +76,7 @@ impl PartyApp {
 
         let mut app = Self {
             installed_steamapps: get_installed_steamapps(),
-            needs_update: false,
+            needs_update: Arc::new(AtomicBool::new(false)),
             options,
             cur_page,
             settings_page: SettingsPage::General,
@@ -94,8 +96,9 @@ impl PartyApp {
         };
 
         if app.options.check_for_updates {
+            let needs_update = app.needs_update.clone();
             app.spawn_task("Checking for updates", move || {
-                app.needs_update = check_for_partydeck_update();
+                needs_update.store(check_for_partydeck_update(), Ordering::Relaxed);
             });
         }
 
