@@ -73,7 +73,7 @@ const BUNDLE: &[(&str, &str)] = &[
 ];
 
 const BUNDLE_OPTIONAL: &[(&str, &str)] = &[
-    ("deps/releases/gamescope/build-gcc/src/gamescope", "bin/gamescope-kbm"),
+    ("deps/gamescope/build-gcc/src/gamescope", "bin/gamescope-kbm"),
 ];
 
 
