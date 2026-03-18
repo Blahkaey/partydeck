@@ -62,7 +62,7 @@ Clone the repo and initialise submodules:
 ```
 git clone https://github.com/partydeck/partydeck.git
 cd partydeck
-git submodule update --init --recursive
+git submodule update --init --recursive --depth 1
 ```
 
 Then build with:
