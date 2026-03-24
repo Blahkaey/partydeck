@@ -350,6 +350,12 @@ pub fn launch_cmds(
             };
         }
 
+        let is_appimage = std::env::var("APPIMAGE").is_ok();
+        if is_appimage {
+            // Because we are faking temp directory, this makes the system use the real vulkan directory for games
+            cmd.env_remove("VK_DRIVER_FILES"); 
+        }
+
         cmd.arg(&path_exec);
 
         for arg in h.args.split_whitespace() {

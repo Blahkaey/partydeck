@@ -1,0 +1,29 @@
+#docker run -v $(pwd)/../:/workspace -w /workspace partydeck-appimage-build
+FROM archlinux:latest AS base
+
+RUN pacman-key --init
+RUN pacman -Syu --noconfirm
+RUN pacman -S --noconfirm git meson rust cargo clang glslang libcap wlroots0.18 sdl2 vulkan-headers libx11 libxmu libxcomposite libxrender libxres libxtst libxkbcommon libdrm libinput wayland-protocols benchmark xorg-xwayland pipewire cmake libavif libheif aom rav1e libdecor libxdamage luajit libva libxss wget curl xorg-server-xvfb fuse-overlayfs bubblewrap libxkbcommon zsync pipewire pulseaudio pipewire-audio alsa-plugins libxkbcommon-x11 libvdpau libvdpau-va-gl sudo pkg-config openssl zip
+
+
+FROM base AS runtime
+
+# Build args to match host user
+ARG UID=1000
+ARG GID=1000
+
+# Create matching user
+RUN groupadd -g $GID appgroup && \
+    useradd -m -u $UID -g $GID appuser
+
+# Add user to sudo group
+RUN usermod -aG wheel appuser
+
+# Allow passwordless sudo for this user
+RUN echo "%wheel ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/wheel && \
+    chmod 0440 /etc/sudoers.d/wheel
+
+USER appuser
+WORKDIR /workspace
+
+CMD ["bash", "-c", "./dist/build_appimage.sh"]
