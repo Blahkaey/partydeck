@@ -274,6 +274,13 @@ pub fn launch_cmds(
             }
         }
 
+        let is_appimage = std::env::var("APPIMAGE").is_ok();
+        if is_appimage {
+            // Because we are faking temp directory, this makes the system use the real vulkan directory for games
+            // Used here because the env var is set durring bwrap and gamescope process starting so env cant be cleared at this stage.
+            cmd.args(["--unsetenv","VK_DRIVER_FILES"]); 
+        }
+
         if h.use_goldberg {
             cmd.env("GseAppPath", PATH_PARTY.join("goldberg_data"));
             cmd.env("GseSavePath", path_prof.join("steam"));
@@ -350,11 +357,6 @@ pub fn launch_cmds(
             };
         }
 
-        let is_appimage = std::env::var("APPIMAGE").is_ok();
-        if is_appimage {
-            // Because we are faking temp directory, this makes the system use the real vulkan directory for games
-            cmd.env_remove("VK_DRIVER_FILES"); 
-        }
 
         cmd.arg(&path_exec);
 
