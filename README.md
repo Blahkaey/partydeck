@@ -121,6 +121,7 @@ PartyDeck uses a few software layers to provide a console-like split-screen gami
 - GloriousEggroll and the rest of the contributors for [UMU Launcher](https://github.com/Open-Wine-Components/umu-launcher)
 - Inspired by [Tau5's Coop-on-Linux](https://github.com/Tau5/Co-op-on-Linux) and [Syntrait's Splinux](https://github.com/Syntrait/splinux)
 - Talos91 and the rest of the Splitscreen.me team for [Nucleus Coop](https://github.com/SplitScreen-Me/splitscreenme-nucleus), and for helping with handler creation
+- Zacksly for the Button Icons and Controls (Licensed under CC BY 3.0 - https://zacksly.itch.io)
 
 ## Disclaimer
 This software has been created purely for the purposes of academic research. It is not intended to be used to attack other systems. Project maintainers are not responsible or liable for misuse of the software. Use responsibly.

@@ -26,8 +26,10 @@ pub enum PadButton {
     RKey,
     XKey,
     ZKey,
+    BackspaceKey,
 
     RightClick,
+    MiddleClick,
 }
 
 #[derive(Clone)]
@@ -120,12 +122,20 @@ impl InputDevice {
                         Some(PadButton::Down)
                     }
                     //keyboard
+                    EventSummary::Key(_, KeyCode::KEY_LEFT, 1) => Some(PadButton::Left),
+                    EventSummary::Key(_, KeyCode::KEY_RIGHT, 1) => Some(PadButton::Right),
+                    EventSummary::Key(_, KeyCode::KEY_ENTER, 1) => Some(PadButton::StartBtn),
+                    EventSummary::Key(_, KeyCode::KEY_KPENTER, 1) => Some(PadButton::StartBtn),
                     EventSummary::Key(_, KeyCode::KEY_A, 1) => Some(PadButton::AKey),
                     EventSummary::Key(_, KeyCode::KEY_R, 1) => Some(PadButton::RKey),
                     EventSummary::Key(_, KeyCode::KEY_X, 1) => Some(PadButton::XKey),
                     EventSummary::Key(_, KeyCode::KEY_Z, 1) => Some(PadButton::ZKey),
+                    EventSummary::Key(_, KeyCode::KEY_BACKSPACE, 1) => {
+                        Some(PadButton::BackspaceKey)
+                    }
                     //mouse
                     EventSummary::Key(_, KeyCode::BTN_RIGHT, 1) => Some(PadButton::RightClick),
+                    EventSummary::Key(_, KeyCode::BTN_MIDDLE, 1) => Some(PadButton::MiddleClick),
                     _ => btn,
                 };
             }

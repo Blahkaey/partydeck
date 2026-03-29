@@ -1,13 +1,58 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::app::{PartyConfig, PadFilterType};
+use crate::app::{PadFilterType, PartyConfig};
 use crate::handler::*;
 use crate::input::*;
 use crate::instance::*;
+use crate::kwin::{kwin_dbus_start_script, kwin_dbus_unload_script, write_kwin_layout_script};
 use crate::paths::*;
-use crate::profiles::{create_profile, create_profile_gamesave};
+use crate::profiles::{create_profile, create_profile_gamesave, remove_guest_profiles};
 use crate::util::*;
+
+pub fn launch_common(
+    handler: &Handler,
+    dev_infos: &[DeviceInfo],
+    instances: &mut Vec<Instance>,
+    monitors: &[crate::monitor::Monitor],
+    cfg: &PartyConfig,
+    layout_rotation: u8,
+) {
+    let _ = crate::app::save_cfg(cfg);
+
+    if let Err(err) = setup_profiles(handler, instances) {
+        println!("[partydeck] Error mounting game directories: {}", err);
+        msg("Failed mounting game directories", &format!("{err}"));
+        return;
+    }
+    if handler.is_saved_handler()
+        && !cfg.disable_mount_gamedirs
+        && cfg.profile_unique_dirs
+        && let Err(err) = fuse_overlayfs_mount_gamedirs(handler, instances)
+    {
+        println!("[partydeck] Error mounting game directories: {}", err);
+        msg("Failed mounting game directories", &format!("{err}"));
+        return;
+    }
+    if let Err(err) = launch_game(handler, dev_infos, instances, monitors, cfg, layout_rotation) {
+        println!("[partydeck] Error launching instances: {}", err);
+        msg("Launch Error", &format!("{err}"));
+    }
+    if cfg.enable_kwin_script {
+        if let Err(err) = kwin_dbus_unload_script() {
+            println!("[partydeck] Error unloading KWin script: {}", err);
+            msg("Failed unloading KWin script", &format!("{err}"));
+        }
+    }
+    if let Err(err) = remove_guest_profiles() {
+        println!("[partydeck] Error removing guest profiles: {}", err);
+        msg("Failed removing guest profiles", &format!("{err}"));
+    }
+    if let Err(err) = clear_tmp() {
+        println!("[partydeck] Error removing tmp directory: {}", err);
+        msg("Failed removing tmp directory", &format!("{err}"));
+    }
+}
 
 pub fn setup_profiles(
     h: &Handler,
@@ -34,18 +79,16 @@ pub fn launch_game(
     h: &Handler,
     input_devices: &[DeviceInfo],
     instances: &Vec<Instance>,
+    monitors: &[crate::monitor::Monitor],
     cfg: &PartyConfig,
+    layout_rotation: u8,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let new_cmds = launch_cmds(h, input_devices, instances, cfg)?;
     print_launch_cmds(&new_cmds);
 
     if cfg.enable_kwin_script {
-        let script = match cfg.vertical_two_player {
-            true => "splitscreen_kwin_vertical.js",
-            false => "splitscreen_kwin.js",
-        };
-
-        kwin_dbus_start_script(PATH_RES.join(script)).map_err(|e| format!("Failed to start KWin script: {}", e))?;
+        let script_path = write_kwin_layout_script(instances, monitors, cfg, layout_rotation)?;
+        kwin_dbus_start_script(script_path).map_err(|e| format!("Failed to start KWin script: {}", e))?;
     }
 
     let sleep_time = match h.pause_between_starts {
@@ -191,6 +234,7 @@ pub fn launch_cmds(
             "-H",
             &instance.height.to_string(),
         ]);
+        cmd.arg(format!("--app-id=instance.{}", i + 1));
         if cfg.gamescope_force_grab_cursor {
             cmd.arg("--force-grab-cursor");
         }

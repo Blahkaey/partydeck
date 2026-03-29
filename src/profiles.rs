@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::path::PathBuf;
 
-use crate::{handler::Handler, paths::*, util::copy_dir_recursive};
+use crate::{handler::Handler, instance::Instance, paths::*, util::copy_dir_recursive};
 
 // Makes a folder and sets up Goldberg Steam Emu profile for Steam games
 pub fn create_profile(name: &str) -> Result<(), std::io::Error> {
@@ -96,6 +96,36 @@ pub fn scan_profiles(include_guest: bool) -> Vec<String> {
     }
 
     out
+}
+
+pub fn auto_assign_profile(instances: &[Instance], profiles: &mut Vec<String>) -> usize {
+    let used: Vec<usize> = instances.iter().map(|inst| inst.profselection).collect();
+
+    // reuse an existing profile if one is free
+    if let Some(i) = (0..profiles.len()).find(|i| !used.contains(i)) {
+        return i;
+    }
+
+    // pick a guest name that isn't already a profile or in use
+    let taken: Vec<&str> = profiles.iter().map(|s| s.as_str()).collect();
+    let mut pool: Vec<&str> = GUEST_NAMES.iter().copied()
+        .filter(|n| !taken.contains(n))
+        .collect();
+
+    let name = if !pool.is_empty() {
+        pool.remove(fastrand::usize(..pool.len())).to_string()
+    } else {
+        (1..).map(|n| format!("Player{n}"))
+            .find(|n| !taken.contains(&n.as_str()))
+            .unwrap()
+    };
+
+    if let Err(e) = create_profile(&name) {
+        println!("[partydeck] Error creating profile '{name}': {e}");
+    }
+
+    profiles.push(name);
+    profiles.len() - 1
 }
 
 pub fn remove_guest_profiles() -> Result<(), Box<dyn Error>> {

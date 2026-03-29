@@ -320,6 +320,28 @@ pub fn scan_handlers() -> Vec<Handler> {
     out
 }
 
+pub fn load_handler_by_name(name: &str) -> Option<Handler> {
+    let entries = std::fs::read_dir(PATH_PARTY.join("handlers")).ok()?;
+
+    for entry in entries.flatten() {
+        if !entry.file_type().is_ok_and(|ft| ft.is_dir()) {
+            continue;
+        }
+
+        let Ok(handler) = Handler::from_json(&entry.path().join("handler.json")) else {
+            continue;
+        };
+
+        let dir_name = entry.file_name();
+        if handler.name.eq_ignore_ascii_case(name)
+            || dir_name.to_string_lossy().eq_ignore_ascii_case(name)
+        {
+            return Some(handler);
+        }
+    }
+    None
+}
+
 pub fn import_pd2() -> Result<(), Box<dyn Error>> {
     let Some(file) = FileDialog::new()
         .set_title("Select File")

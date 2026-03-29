@@ -2,6 +2,7 @@ mod app;
 mod handler;
 mod input;
 mod instance;
+mod kwin;
 mod launch;
 mod monitor;
 mod paths;
@@ -9,13 +10,14 @@ mod profiles;
 mod util;
 
 use crate::app::*;
-use crate::handler::Handler;
+use crate::handler::{Handler, load_handler_by_name};
 use crate::monitor::get_monitors_errorless;
 use crate::paths::PATH_PARTY;
 use crate::profiles::remove_guest_profiles;
 use crate::util::*;
 
 fn main() -> eframe::Result {
+
     if std::env::args().any(|arg| arg == "--help") {
         println!("{}", USAGE_TEXT);
         std::process::exit(0);
@@ -67,6 +69,8 @@ fn main() -> eframe::Result {
 
     let mut exec = String::new();
     let mut execargs = String::new();
+    let mut bigmode_handler_name = String::new();
+
     if let Some(exec_index) = args.iter().position(|arg| arg == "--exec") {
         if let Some(next_arg) = args.get(exec_index + 1) {
             exec = next_arg.clone();
@@ -83,6 +87,18 @@ fn main() -> eframe::Result {
             std::process::exit(1);
         }
     }
+    if let Some(bigmode_index) = args.iter().position(|arg| arg == "--bigmode") {
+        if let Some(next_arg) = args.get(bigmode_index + 1) {
+            bigmode_handler_name = next_arg.clone();
+        } else {
+            eprintln!("{}", USAGE_TEXT);
+            std::process::exit(1);
+        }
+    }
+    if !bigmode_handler_name.is_empty() && !exec.is_empty() {
+        eprintln!("Error: --bigmode and --exec are mutually exclusive. Use one or the other.");
+        std::process::exit(1);
+    }
 
     let handler_lite = if !exec.is_empty() {
         Some(Handler::from_cli(&exec, &execargs))
@@ -90,7 +106,8 @@ fn main() -> eframe::Result {
         None
     };
 
-    let fullscreen = std::env::args().any(|arg| arg == "--fullscreen");
+    let is_bigmode = !bigmode_handler_name.is_empty();
+    let fullscreen = std::env::args().any(|arg| arg == "--fullscreen") || is_bigmode;
 
     std::fs::create_dir_all(PATH_PARTY.join("handlers"))
         .expect("Failed to create handlers directory");
@@ -131,13 +148,19 @@ fn main() -> eframe::Result {
         "PartyDeck",
         options,
         Box::new(|cc| {
-            // This gives us image support:
             egui_extras::install_image_loaders(&cc.egui_ctx);
             cc.egui_ctx.set_zoom_factor(scale);
-            Ok(Box::<PartyApp>::new(PartyApp::new(
-                monitors.clone(),
-                handler_lite,
-            )))
+            if is_bigmode {
+                let handler = load_handler_by_name(&bigmode_handler_name).unwrap_or_else(|| {
+                    let m = format!("No handler named '{bigmode_handler_name}' was found");
+                    eprintln!("Error: {m}");
+                    msg("Handler not found", &m);
+                    std::process::exit(1);
+                });
+                Ok(Box::new(BigModeApp::new(monitors.clone(), handler)))
+            } else {
+                Ok(Box::new(PartyApp::new(monitors.clone(), handler_lite)))
+            }
         }),
     )
 }
@@ -148,6 +171,7 @@ Usage: partydeck [OPTIONS]
 Options:
     --exec <executable>   Execute the specified executable in splitscreen. If this isn't specified, PartyDeck will launch in the regular GUI mode.
     --args [args]         Specify arguments for the executable to be launched with. Must be quoted if containing spaces.
+    --bigmode <name>      Launch Big Mode GUI with the specified handler. Mutually exclusive with --exec/--handler.
     --fullscreen          Start the GUI in fullscreen mode
     --kwin                Launch PartyDeck inside of a KWin session
 "#;

@@ -2,6 +2,7 @@ use super::app::{MenuPage, PartyApp, SettingsPage};
 use super::config::*;
 use crate::handler::*;
 use crate::input::*;
+use crate::instance::remove_device_from_instance;
 use crate::paths::*;
 use crate::profiles::*;
 use crate::util::*;
@@ -466,7 +467,9 @@ impl PartyApp {
         }
 
         for (i, d) in devices_to_remove {
-            self.remove_device_instance(i, d);
+            if remove_device_from_instance(&mut self.instances, i, d) {
+                self.update_instance_add_dev_after_removal(i);
+            }
         }
 
         if self.instances.len() > 0 {

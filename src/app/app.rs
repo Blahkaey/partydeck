@@ -220,6 +220,16 @@ impl PartyApp {
         self.handler_lite.is_some()
     }
 
+    pub fn update_instance_add_dev_after_removal(&mut self, removed_idx: usize) {
+        if let Some(waiting) = self.instance_add_dev {
+            if waiting == removed_idx {
+                self.instance_add_dev = None;
+            } else if waiting > removed_idx {
+                self.instance_add_dev = Some(waiting - 1);
+            }
+        }
+    }
+
     fn handle_gamepad_gui(&mut self, raw_input: &mut egui::RawInput) {
         let mut key: Option<egui::Key> = None;
         for pad in &mut self.input_devices {
@@ -284,14 +294,14 @@ impl PartyApp {
                         continue;
                     }
                     if !self.options.allow_multiple_instances_on_same_device
-                        && self.is_device_in_any_instance(i)
+                        && is_device_in_any_instance(&self.instances, i)
                     {
                         continue;
                     }
                     // Prevent same keyboard/mouse device in multiple instances due to current custom gamescope limitations
                     // TODO: Remove this when custom gamescope supports the same keyboard/mouse device for multiple instances
                     if self.input_devices[i].device_type() != DeviceType::Gamepad
-                        && self.is_device_in_any_instance(i)
+                        && is_device_in_any_instance(&self.instances, i)
                     {
                         continue;
                     }
@@ -299,7 +309,7 @@ impl PartyApp {
                     match self.instance_add_dev {
                         Some(inst) => {
                             // Add the device in the instance only if it's not already there
-                            if !self.is_device_in_instance(inst, i) {
+                            if !instance_has_device(&self.instances, inst, i) {
                                 self.instance_add_dev = None;
                                 self.instances[inst].devices.push(i);
                             } else {
@@ -321,21 +331,23 @@ impl PartyApp {
                 Some(PadButton::BBtn) | Some(PadButton::XKey) => {
                     if self.instance_add_dev != None {
                         self.instance_add_dev = None;
-                    } else if self.is_device_in_any_instance(i) {
-                        self.remove_device(i);
+                    } else if let Some(idx) = self.instances.iter().rposition(|inst| inst.devices.contains(&i)) {
+                        if remove_device_from_instance(&mut self.instances, idx, i) {
+                            self.update_instance_add_dev_after_removal(idx);
+                        }
                     } else if self.instances.len() < 1 {
                         self.cur_page = MenuPage::Game;
                     }
                 }
                 Some(PadButton::YBtn) | Some(PadButton::AKey) => {
                     if self.instance_add_dev == None {
-                        if let Some((instance, _)) = self.find_device_in_instance(i) {
+                        if let Some(instance) = find_device_instance(&self.instances, i) {
                             self.instance_add_dev = Some(instance);
                         }
                     }
                 }
                 Some(PadButton::StartBtn) => {
-                    if self.instances.len() > 0 && self.is_device_in_any_instance(i) {
+                    if self.instances.len() > 0 && is_device_in_any_instance(&self.instances, i) {
                         self.prepare_game_launch();
                     }
                 }
@@ -345,130 +357,30 @@ impl PartyApp {
         }
     }
 
-    fn is_device_in_any_instance(&self, dev: usize) -> bool {
-        for instance in &self.instances {
-            if instance.devices.contains(&dev) {
-                return true;
-            }
-        }
-        false
-    }
-
-    fn is_device_in_instance(&self, instance_index: usize, dev: usize) -> bool {
-        if self.instances[instance_index].devices.contains(&dev) {
-            return true;
-        }
-        false
-    }
-
-    fn find_device_in_instance(&mut self, dev: usize) -> Option<(usize, usize)> {
-        for (i, instance) in self.instances.iter().enumerate() {
-            for (d, device) in instance.devices.iter().enumerate() {
-                if device == &dev {
-                    return Some((i, d));
-                }
-            }
-        }
-        None
-    }
-
-    fn find_device_in_instance_from_end(&mut self, dev: usize) -> Option<(usize, usize)> {
-        for (i, instance) in self.instances.iter().enumerate().rev() {
-            for (d, device) in instance.devices.iter().enumerate() {
-                if device == &dev {
-                    return Some((i, d));
-                }
-            }
-        }
-        None
-    }
-
-    pub fn remove_device(&mut self, dev: usize) {
-        if let Some((instance_index, device_index)) = self.find_device_in_instance_from_end(dev) {
-            self.instances[instance_index].devices.remove(device_index);
-            if self.instances[instance_index].devices.is_empty() {
-                self.instances.remove(instance_index);
-            }
-        }
-    }
-
-    pub fn remove_device_instance(&mut self, instance_index: usize, dev: usize) {
-        let device_index = self.instances[instance_index]
-            .devices
-            .iter()
-            .position(|device| device == &dev);
-
-        if let Some(d) = device_index {
-            self.instances[instance_index].devices.remove(d);
-
-            if self.instances[instance_index].devices.is_empty() {
-                self.instances.remove(instance_index);
-            }
-        }
-    }
-
     pub fn prepare_game_launch(&mut self) {
-        if self.options.gamescope_sdl_backend {
-            set_instance_resolutions_multimonitor(
-                &mut self.instances,
-                &self.monitors,
-                &self.options,
-            );
-        } else {
-            set_instance_resolutions(&mut self.instances, &self.monitors[0], &self.options);
-        }
-        set_instance_names(&mut self.instances, &self.profiles);
-
         let handler = if let Some(h) = self.handler_lite.clone() {
             h
         } else {
             cur_handler!(self).to_owned()
         };
 
-        let instances = self.instances.clone();
+        let mut instances = build_launch_instances(
+            &self.instances,
+            &self.profiles,
+            &self.monitors,
+            &self.options,
+            0,
+        );
+        set_instance_names(&mut instances, &self.profiles);
         let dev_infos: Vec<DeviceInfo> = self.input_devices.iter().map(|p| p.info()).collect();
 
         let cfg = self.options.clone();
-        let _ = save_cfg(&cfg);
+        let monitors = self.monitors.clone();
 
         self.cur_page = MenuPage::Home;
-        self.spawn_task(
-            "Launching...\n\nDon't press any buttons or move any analog sticks or mice.",
-            move || {
+        self.spawn_task("Launching...\n\nDon't press any buttons or move any analog sticks or mice.", move || {
                 sleep(std::time::Duration::from_secs_f32(1.5));
-
-                if let Err(err) = setup_profiles(&handler, &instances) {
-                    println!("[partydeck] Error mounting game directories: {}", err);
-                    msg("Failed mounting game directories", &format!("{err}"));
-                    return;
-                }
-                if handler.is_saved_handler()
-                    && !cfg.disable_mount_gamedirs
-                    && cfg.profile_unique_dirs
-                    && let Err(err) = fuse_overlayfs_mount_gamedirs(&handler, &instances)
-                {
-                    println!("[partydeck] Error mounting game directories: {}", err);
-                    msg("Failed mounting game directories", &format!("{err}"));
-                    return;
-                }
-                if let Err(err) = launch_game(&handler, &dev_infos, &instances, &cfg) {
-                    println!("[partydeck] Error launching instances: {}", err);
-                    msg("Launch Error", &format!("{err}"));
-                }
-                if cfg.enable_kwin_script {
-                    if let Err(err) = kwin_dbus_unload_script() {
-                        println!("[partydeck] Error unloading KWin script: {}", err);
-                        msg("Failed unloading KWin script", &format!("{err}"));
-                    }
-                }
-                if let Err(err) = remove_guest_profiles() {
-                    println!("[partydeck] Error removing guest profiles: {}", err);
-                    msg("Failed removing guest profiles", &format!("{err}"));
-                }
-                if let Err(err) = clear_tmp() {
-                    println!("[partydeck] Error removing tmp directory: {}", err);
-                    msg("Failed removing tmp directory", &format!("{err}"));
-                }
+                launch_common(&handler, &dev_infos, &mut instances, &monitors, &cfg, 0);
             },
         );
     }

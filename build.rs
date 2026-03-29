@@ -67,9 +67,6 @@ const BUNDLE: &[(&str, &str)] = &[
     ("deps/releases/gbe-win/steamclient_experimental/GameOverlayRenderer64.dll", "res/goldberg/win/GameOverlayRenderer64.dll"),
     // umu
     ("deps/releases/umu/umu-run", "bin/umu-run"),
-    // resources
-    ("res/splitscreen_kwin.js", "res/splitscreen_kwin.js"),
-    ("res/splitscreen_kwin_vertical.js", "res/splitscreen_kwin_vertical.js"),
 ];
 
 const BUNDLE_OPTIONAL: &[(&str, &str)] = &[
