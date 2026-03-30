@@ -52,31 +52,31 @@ pub fn write_kwin_layout_script(
     monitors: &[Monitor],
     cfg: &PartyConfig,
     layout_rotation: u8,
+    pids: &[u32],
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let tmp_dir = PATH_PARTY.join("tmp");
     std::fs::create_dir_all(&tmp_dir)?;
 
     let path = tmp_dir.join("splitscreen_kwin.js");
-    std::fs::write(&path, build_kwin_layout_script(instances, monitors, cfg, layout_rotation))?;
+    std::fs::write(&path, build_kwin_layout_script(instances, monitors, cfg, layout_rotation, pids))?;
 
     Ok(path)
 }
 
-fn build_kwin_layout_script(instances: &[Instance], monitors: &[Monitor], cfg: &PartyConfig, layout_rotation: u8) -> String {
-    let app_ids = instances
+fn build_kwin_layout_script(instances: &[Instance], monitors: &[Monitor], cfg: &PartyConfig, layout_rotation: u8, pids: &[u32]) -> String {
+    let pid_list = pids
         .iter()
-        .enumerate()
-        .map(|(i, _)| format!(r#""instance.{}""#, i + 1))
+        .map(|p| p.to_string())
         .collect::<Vec<_>>()
         .join(", ");
     let regions = instance_layout_regions(instances, cfg.vertical_two_player, layout_rotation);
     let layout = regions
         .iter()
-        .enumerate()
-        .map(|(i, rect)| {
+        .zip(pids.iter())
+        .map(|(rect, pid)| {
             format!(
-                r#"  "instance.{}": {{ x: {}, y: {}, width: {}, height: {} }}"#,
-                i + 1,
+                r#"  {}: {{ x: {}, y: {}, width: {}, height: {} }}"#,
+                pid,
                 rect.x,
                 rect.y,
                 rect.w,
@@ -88,23 +88,23 @@ fn build_kwin_layout_script(instances: &[Instance], monitors: &[Monitor], cfg: &
 
     let monitor_map = instances
         .iter()
-        .enumerate()
-        .map(|(i, inst)| {
+        .zip(pids.iter())
+        .map(|(inst, pid)| {
             let name = monitors
                 .get(inst.monitor)
                 .map(|m| m.name())
                 .unwrap_or("");
-            format!(r#"  "instance.{}": "{}""#, i + 1, name)
+            format!(r#"  {}: "{}""#, pid, name)
         })
         .collect::<Vec<_>>()
         .join(",\n");
 
     format!(
-        r#"const appIds = [{app_ids}];
-const layout = {{
+        r#"var pids = [{pid_list}];
+var layout = {{
 {layout}
 }};
-const monitorNames = {{
+var monitorNames = {{
 {monitor_map}
 }};
 
@@ -116,7 +116,7 @@ function clientArea(client) {{
 }}
 
 function isManagedClient(client) {{
-  return !!(client && client.desktopFileName && layout[client.desktopFileName]);
+  return !!(client && client.pid && layout[client.pid]);
 }}
 
 function shouldPreferClient(candidate, current) {{
@@ -133,18 +133,9 @@ function shouldPreferClient(candidate, current) {{
   return clientArea(candidate) > clientArea(current);
 }}
 
-function ensureHooks(client) {{
-  if (!client || client.__partydeckHooked) {{
-    return;
-  }}
-
-  client.__partydeckHooked = true;
-  client.desktopFileNameChanged.connect(gamescopeSplitscreen);
-}}
-
 function getManagedClients() {{
   var allClients = workspace.windowList();
-  var managedByAppId = {{}};
+  var managedByPid = {{}};
 
   for (var i = 0; i < allClients.length; i++) {{
     var client = allClients[i];
@@ -152,15 +143,15 @@ function getManagedClients() {{
       continue;
     }}
 
-    var appId = client.desktopFileName;
-    if (shouldPreferClient(client, managedByAppId[appId])) {{
-      managedByAppId[appId] = client;
+    var p = client.pid;
+    if (shouldPreferClient(client, managedByPid[p])) {{
+      managedByPid[p] = client;
     }}
   }}
 
   var managedClients = [];
-  for (var appIdIndex = 0; appIdIndex < appIds.length; appIdIndex++) {{
-    var managedClient = managedByAppId[appIds[appIdIndex]];
+  for (var pidIndex = 0; pidIndex < pids.length; pidIndex++) {{
+    var managedClient = managedByPid[pids[pidIndex]];
     if (managedClient) {{
       managedClients.push(managedClient);
     }}
@@ -182,12 +173,12 @@ function findOutputByName(name) {{
 }}
 
 function applyLayout(client) {{
-  var spec = layout[client.desktopFileName];
+  var spec = layout[client.pid];
   if (!spec) {{
     return;
   }}
 
-  var targetName = monitorNames[client.desktopFileName];
+  var targetName = monitorNames[client.pid];
   var targetOutput = null;
   if (targetName) {{
     targetOutput = findOutputByName(targetName);
@@ -240,11 +231,6 @@ function gamescopeAboveBelow() {{
 }}
 
 function gamescopeSplitscreen() {{
-  var allClients = workspace.windowList();
-  for (var i = 0; i < allClients.length; i++) {{
-    ensureHooks(allClients[i]);
-  }}
-
   var managedClients = getManagedClients();
   for (var i = 0; i < managedClients.length; i++) {{
     applyLayout(managedClients[i]);
@@ -253,7 +239,6 @@ function gamescopeSplitscreen() {{
 }}
 
 workspace.windowAdded.connect(function(client) {{
-  ensureHooks(client);
   gamescopeSplitscreen();
 }});
 workspace.windowRemoved.connect(gamescopeSplitscreen);

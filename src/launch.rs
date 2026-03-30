@@ -86,11 +86,6 @@ pub fn launch_game(
     let new_cmds = launch_cmds(h, input_devices, instances, cfg)?;
     print_launch_cmds(&new_cmds);
 
-    if cfg.enable_kwin_script {
-        let script_path = write_kwin_layout_script(instances, monitors, cfg, layout_rotation)?;
-        kwin_dbus_start_script(script_path).map_err(|e| format!("Failed to start KWin script: {}", e))?;
-    }
-
     let sleep_time = match h.pause_between_starts {
         Some(f) => f,
         None => 0.5,
@@ -109,6 +104,12 @@ pub fn launch_game(
             std::thread::sleep(std::time::Duration::from_secs_f64(sleep_time));
         }
         i += 1;
+    }
+
+    if cfg.enable_kwin_script {
+        let pids: Vec<u32> = handles.iter().map(|h| h.id()).collect();
+        let script_path = write_kwin_layout_script(instances, monitors, cfg, layout_rotation, &pids)?;
+        kwin_dbus_start_script(script_path).map_err(|e| format!("Failed to start KWin script: {}", e))?;
     }
 
     for mut handle in handles {
@@ -234,7 +235,6 @@ pub fn launch_cmds(
             "-H",
             &instance.height.to_string(),
         ]);
-        cmd.arg(format!("--app-id=instance.{}", i + 1));
         if cfg.gamescope_force_grab_cursor {
             cmd.arg("--force-grab-cursor");
         }
