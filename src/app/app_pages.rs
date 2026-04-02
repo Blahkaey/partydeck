@@ -201,6 +201,30 @@ impl PartyApp {
             ui.checkbox(&mut h.use_mangohud, "Enable MangoHud");
         });
 
+        ui.horizontal(|ui| {
+            ui.label("Frame limit override:");
+            // 0 = use global, 1 = disabled, 2 = custom
+            let mut mode: u8 = match h.frame_limit_override {
+                None => 0,
+                Some(0) => 1,
+                Some(_) => 2,
+            };
+            if ui.selectable_value(&mut mode, 0, "Use global").changed() {
+                h.frame_limit_override = None;
+            }
+            if ui.selectable_value(&mut mode, 1, "Disabled").changed() {
+                h.frame_limit_override = Some(0);
+            }
+            if ui.selectable_value(&mut mode, 2, "Custom").changed() {
+                h.frame_limit_override = Some(60);
+            }
+            if mode == 2 {
+                let limit = h.frame_limit_override.get_or_insert(60);
+                if *limit == 0 { *limit = 60; }
+                ui.add(egui::DragValue::new(limit).range(20..=360).suffix(" fps"));
+            }
+        });
+
         h.steam_appid = match &self.installed_steamapps[selected_index] {
             Some(app) => Some(app.app_id),
             None => None,
@@ -650,6 +674,53 @@ impl PartyApp {
         }
         if gamescope_force_grab_cursor_check.hovered() {
             self.infotext = "Sets the \"--force-grab-cursor\" flag in Gamescope. This keeps the cursor within the Gamescope window. If unsure, leave this unchecked.".to_string();
+        }
+
+        ui.separator();
+
+        ui.horizontal(|ui| {
+            let fl_label = ui.label("Frame limit:");
+            let mut enabled = self.options.frame_limit > 0;
+            if ui.checkbox(&mut enabled, "").changed() {
+                self.options.frame_limit = if enabled { 60 } else { 0 };
+                if enabled {
+                    msg(
+                        "Frame Limiter Notice",
+                        "If launching PartyDeck through Steam Big Picture Mode, make sure Steam's frame limiter is disabled. Otherwise there will be double frame limiting and potentially worse frame times.",
+                    );
+                }
+            }
+            if enabled {
+                ui.add(egui::DragValue::new(&mut self.options.frame_limit)
+                    .range(20..=360).suffix(" fps"));
+            } else {
+                ui.weak("Off");
+            }
+            if fl_label.hovered() {
+                self.infotext = "DEFAULT: Off\n\nSets a target frame rate limit.".to_string();
+            }
+        });
+
+        if self.options.frame_limit > 0 {
+            ui.horizontal(|ui| {
+                ui.label("MangoHud mode:");
+                let r1 = ui.radio_value(
+                    &mut self.options.mangohud_limit_mode,
+                    MangoHudLimitMode::Early,
+                    "Early",
+                );
+                let r2 = ui.radio_value(
+                    &mut self.options.mangohud_limit_mode,
+                    MangoHudLimitMode::Late,
+                    "Late",
+                );
+                if r1.hovered() {
+                    self.infotext = "DEFAULT: Early\n\nWaits before presenting each frame. Produces the flattest, most consistent frame times. Adds small amount of input latency.".to_string();
+                }
+                if r2.hovered() {
+                    self.infotext = "Waits after presenting each frame. Lower input latency than Early mode, but frame times will be less consistent.".to_string();
+                }
+            });
         }
     }
 }

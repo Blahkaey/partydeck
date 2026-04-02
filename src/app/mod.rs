@@ -4,5 +4,6 @@ mod app_panels;
 mod config;
 
 pub use app::PartyApp;
+pub use config::MangoHudLimitMode;
 pub use config::PadFilterType;
 pub use config::PartyConfig;

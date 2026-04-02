@@ -7,6 +7,13 @@ use std::io::BufReader;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Default)]
+pub enum MangoHudLimitMode {
+    #[default]
+    Early,
+    Late,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Default)]
 pub enum PadFilterType {
     All,
     #[default]
@@ -48,6 +55,10 @@ pub struct PartyConfig {
     pub disable_mount_gamedirs: bool,
     #[serde(default)]
     pub check_for_updates: bool,
+    #[serde(default)]
+    pub frame_limit: u32,
+    #[serde(default)]
+    pub mangohud_limit_mode: MangoHudLimitMode,
 }
 
 impl Default for PartyConfig {
@@ -67,6 +78,8 @@ impl Default for PartyConfig {
             profile_unique_dirs: true,
             disable_mount_gamedirs: false,
             check_for_updates: true,
+            frame_limit: 0,
+            mangohud_limit_mode: MangoHudLimitMode::Early,
         }
     }
 }

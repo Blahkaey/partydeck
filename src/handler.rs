@@ -46,6 +46,8 @@ pub struct Handler {
 
     #[serde(default)]
     pub use_mangohud: bool,
+    #[serde(default)]
+    pub frame_limit_override: Option<u32>,
     pub use_goldberg: bool,
     pub steam_appid: Option<u32>,
 
@@ -74,6 +76,7 @@ impl Default for Handler {
             pause_between_starts: None,
 
             use_mangohud: false,
+            frame_limit_override: None,
             use_goldberg: false,
             steam_appid: None,
 

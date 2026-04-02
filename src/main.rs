@@ -26,10 +26,11 @@ fn main() -> eframe::Result {
     println!("[partydeck] Monitors detected:");
     for monitor in &monitors {
         println!(
-            "[partydeck] {} ({}x{})",
+            "[partydeck] {} ({}x{} @ {}Hz)",
             monitor.name(),
             monitor.width(),
-            monitor.height()
+            monitor.height(),
+            monitor.refresh_rate()
         );
     }
 
