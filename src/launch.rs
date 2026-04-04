@@ -216,12 +216,14 @@ pub fn launch_cmds(
             "-H",
             &instance.height.to_string(),
         ]);
-        let refresh = if cfg.gamescope_sdl_backend {
-            monitors[instance.monitor].refresh_rate()
-        } else {
-            monitors[0].refresh_rate()
-        };
-        cmd.args(["-r", &refresh.to_string()]);
+        if cfg.gamescope_auto_set_refresh_rate {
+            let refresh = if cfg.gamescope_sdl_backend {
+                monitors[instance.monitor].refresh_rate()
+            } else {
+                monitors[0].refresh_rate()
+            };
+            cmd.args(["-r", &refresh.to_string()]);
+        }
         if cfg.gamescope_force_grab_cursor {
             cmd.arg("--force-grab-cursor");
         }

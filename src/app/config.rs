@@ -35,6 +35,8 @@ pub struct PartyConfig {
     pub gamescope_sdl_backend: bool,
     #[serde(default)]
     pub gamescope_force_grab_cursor: bool,
+    #[serde(default)]
+    pub gamescope_auto_set_refresh_rate: bool,
     #[serde(default = "default_true")]
     pub kbm_support: bool,
     #[serde(default)]
@@ -68,6 +70,7 @@ impl Default for PartyConfig {
             gamescope_fix_lowres: true,
             gamescope_sdl_backend: true,
             gamescope_force_grab_cursor: false,
+            gamescope_auto_set_refresh_rate: false,
             kbm_support: true,
             proton_version: "".to_string(),
             proton_separate_pfxs: true,

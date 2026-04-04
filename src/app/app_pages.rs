@@ -662,6 +662,10 @@ impl PartyApp {
             &mut self.options.gamescope_force_grab_cursor,
             "Force grab cursor for Gamescope",
         );
+        let gamescope_auto_set_refresh_rate_check = ui.checkbox(
+            &mut self.options.gamescope_auto_set_refresh_rate,
+            "Automatically set Gamescope refresh rate",
+        );
 
         if gamescope_lowres_fix_check.hovered() {
             self.infotext = "Many games have graphical problems or even crash when running at resolutions below 600p. If this is enabled, any instances below 600p will automatically be resized before launching.".to_string();
@@ -674,6 +678,9 @@ impl PartyApp {
         }
         if gamescope_force_grab_cursor_check.hovered() {
             self.infotext = "Sets the \"--force-grab-cursor\" flag in Gamescope. This keeps the cursor within the Gamescope window. If unsure, leave this unchecked.".to_string();
+        }
+        if gamescope_auto_set_refresh_rate_check.hovered() {
+            self.infotext = "DEFAULT: Disabled\n\nAutomatically sets Gamescope's refresh rate to match the selected display. Use this if your games are not picking up the correct display refresh rate.".to_string();
         }
 
         ui.separator();
