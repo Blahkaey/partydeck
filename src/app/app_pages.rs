@@ -693,7 +693,8 @@ impl PartyApp {
                 if enabled {
                     msg(
                         "Frame Limiter Notice",
-                        "If launching PartyDeck through Steam Big Picture Mode, make sure Steam's frame limiter is disabled. Otherwise there will be double frame limiting and potentially worse frame times.",
+                        "If launching PartyDeck through Steam Big Picture Mode, make sure Steam's frame limiter is disabled. Otherwise there will be double frame limiting and potentially worse frame times.
+                        \n\nFrame limiting injects MangoHud into the game process. This may not work with some opengl games or games that override LD_PRELOAD",
                     );
                 }
             }
