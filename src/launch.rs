@@ -184,32 +184,13 @@ pub fn launch_cmds(
             }
         }
 
-        let mut mangohud_config: Option<String> = None;
         let frame_limit = h.frame_limit_override.unwrap_or(cfg.frame_limit);
-
         let mangohud_framelimit = frame_limit > 0;
-        let use_mangohud = h.use_mangohud || mangohud_framelimit;
 
-        if use_mangohud {
-            let mut config_parts: Vec<String> = Vec::new();
-
-            if mangohud_framelimit {
-                let method = match cfg.mangohud_limit_mode {
-                    MangoHudLimitMode::Early => "early",
-                    MangoHudLimitMode::Late => "late",
-                };
-                config_parts.push(format!("fps_limit={}", frame_limit));
-                config_parts.push(format!("fps_limit_method={}", method));
-            }
-
-            if !h.use_mangohud {
-                config_parts.push("no_display".to_string());
-            }
-
-            if !config_parts.is_empty() {
-                mangohud_config = Some(config_parts.join(","));
-            }
+        if h.use_mangohud {
+            cmd.arg("--mangoapp");
         }
+
         cmd.args([
             "-W",
             &instance.width.to_string(),
@@ -267,12 +248,18 @@ pub fn launch_cmds(
         cmd.args(["--dev-bind", "/", "/"]);
         cmd.args(["--tmpfs", "/tmp"]);
 
-        if use_mangohud {
+        if mangohud_framelimit {
+            println!("[partydeck] Frame limiting enabled");
+            let method = match cfg.mangohud_limit_mode {
+                MangoHudLimitMode::Early => "early",
+                MangoHudLimitMode::Late => "late",
+            };
+            let mangohud_config = format!("fps_limit={},fps_limit_method={},no_display", frame_limit, method);
             cmd.args(["--setenv", "MANGOHUD", "1"]);
+            cmd.args(["--setenv", "LD_PRELOAD", "/usr/$LIB/mangohud/libMangoHud_shim.so"]);
+            cmd.args(["--setenv", "MANGOHUD_CONFIG", &mangohud_config]);
         }
-        if let Some(ref mangohud_config) = mangohud_config {
-            cmd.args(["--setenv", "MANGOHUD_CONFIG", mangohud_config]);
-        }
+    
         // Mask out any gamepads that aren't this player's
         for (d, dev) in input_devices.iter().enumerate() {
             if !dev.enabled
