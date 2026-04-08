@@ -92,7 +92,7 @@ pub fn get_x11_dpi_scale() -> f32 {
     for line in rm_string.lines() {
         if let Some(rest) = line.strip_prefix("Xft.dpi:") {
             if let Ok(dpi) = rest.trim().parse::<f32>() {
-                return dpi / 96.0;
+                if dpi > 0.0 { return dpi / 96.0; }
             }
         }
     }
