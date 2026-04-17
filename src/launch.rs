@@ -5,6 +5,7 @@ use crate::app::{PartyConfig, PadFilterType};
 use crate::handler::*;
 use crate::input::*;
 use crate::instance::*;
+use crate::monitor::Monitor;
 use crate::paths::*;
 use crate::profiles::{create_profile, create_profile_gamesave};
 use crate::util::*;
@@ -35,8 +36,9 @@ pub fn launch_game(
     input_devices: &[DeviceInfo],
     instances: &Vec<Instance>,
     cfg: &PartyConfig,
+    monitors: &[Monitor],
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let new_cmds = launch_cmds(h, input_devices, instances, cfg)?;
+    let new_cmds = launch_cmds(h, input_devices, instances, cfg, monitors)?;
     print_launch_cmds(&new_cmds);
 
     if cfg.enable_kwin_script {
@@ -80,6 +82,7 @@ pub fn launch_cmds(
     input_devices: &[DeviceInfo],
     instances: &Vec<Instance>,
     cfg: &PartyConfig,
+    monitors: &[Monitor],
 ) -> Result<Vec<std::process::Command>, Box<dyn std::error::Error>> {
     let win = h.win();
     let exec = Path::new(&h.exec);
@@ -191,6 +194,14 @@ pub fn launch_cmds(
             "-H",
             &instance.height.to_string(),
         ]);
+        if cfg.gamescope_auto_set_refresh_rate {
+            let refresh = if cfg.gamescope_sdl_backend {
+                monitors[instance.monitor].refresh_rate()
+            } else {
+                monitors[0].refresh_rate()
+            };
+            cmd.args(["-r", &refresh.to_string()]);
+        }
         if cfg.gamescope_force_grab_cursor {
             cmd.arg("--force-grab-cursor");
         }
